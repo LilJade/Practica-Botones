@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.gson.Gson;
+import com.lilJade.DAO.ProductoDao;
 import com.lilJade.model.Inventario;
 
 /**
@@ -30,50 +32,68 @@ public class servletControler extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		response.getWriter().append("Served at: ").append(request.getContextPath());
+		Inventario inv = new Inventario();
+		ProductoDao prdD = new ProductoDao();
+
+		String id = null;
+		String nombrePr = null;
+		String precioPr = null;
+		String cantidadPr = null;
+		String totalPr = null;
+		try {
+			id = request.getParameter("Id");
+			nombrePr = request.getParameter("nProducto");
+			precioPr = request.getParameter("pProducto");
+			cantidadPr = request.getParameter("cProducto");
+			totalPr = request.getParameter("tProducto");
+			
+			inv.setId(Integer.parseInt(id));
+			inv.setNombreProducto(nombrePr);
+			inv.setPrecioProducto(Double.parseDouble(precioPr));
+			inv.setCantidadProducto(Integer.parseInt(cantidadPr));
+			inv.setTotalProducto(Double.parseDouble(totalPr));
+		} catch (Exception e) {
+		}
+		
+		String acttion = request.getParameter("btn");
+		
+		if(acttion.equals("GUARDAR")){
+			inv.setId(Integer.parseInt(id));
+			inv.setNombreProducto(nombrePr);
+			inv.setPrecioProducto(Double.parseDouble(precioPr));
+			inv.setCantidadProducto(Integer.parseInt(cantidadPr));
+			inv.setTotalProducto(Double.parseDouble(totalPr));
+			
+			prdD.agregarDatos(inv);
+		} else if(acttion.equals("ACTUALIZAR")) {
+			inv.setId(Integer.parseInt(id));
+			inv.setNombreProducto(nombrePr);
+			inv.setPrecioProducto(Double.parseDouble(precioPr));
+			inv.setCantidadProducto(Integer.parseInt(cantidadPr));
+			inv.setTotalProducto(Double.parseDouble(totalPr));
+			
+			prdD.actualizarDatos(inv);
+		} else if(acttion.equals("ELIMINAR")){
+			inv.setId(Integer.parseInt(id));
+			prdD.eliminarDatos(inv);
+		}
+		
+		response.sendRedirect("index.jsp");
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
 		
-		String id = request.getParameter("Id");
-		String nombrePr = request.getParameter("nProducto");
-		String precioPr = request.getParameter("pProducto");
-		String cantidadPr = request.getParameter("cProducto");
-		String totalPr = request.getParameter("tProducto");
+		ProductoDao invDao = new ProductoDao();
+		Gson json = new Gson();
 		
-		Inventario inv = new Inventario();
-		inv.setId(Integer.parseInt(id));
-		//inv.setNombreProducto(nombrePr);
-		//inv.setPrecioProducto(Double.parseDouble(precioPr));
-		//inv.setCantidadProducto(Integer.parseInt(cantidadPr));
-		//inv.setTotalProducto(Double.parseDouble(totalPr));
-		
-		EntityManager em;
-		EntityManagerFactory emf;
-		
-		emf = Persistence.createEntityManagerFactory("HIBERNATE_START_JPA");
-		em = emf.createEntityManager();
-		em.getTransaction().begin();
-
-		//Agregar
-		//em.persist(inv);
-		
-		//Editar
-		//em.merge(inv);
-		
-		//Eliminar
-		inv = em.getReference(Inventario.class, inv.getId());
-		em.remove(inv);
-		em.flush();
-		em.getTransaction().commit();
-		
-		response.sendRedirect("index.jsp");
+		try {
+			response.getWriter().append(json.toJson(invDao.productoLista()));
+		} catch (Exception e) {
+			System.out.println(e);
+		}
 	}
 
 }
